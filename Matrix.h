@@ -1,6 +1,10 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-
+#include <string>
+#include <cassert>
+#include <iostream>
+#include <typeinfo>
+using namespace std;
 class Matrix
 {
 public:
@@ -8,30 +12,49 @@ public:
 	Matrix(Matrix& m);
 	Matrix(int row, int column);
 	Matrix(int row, int column, double value);
-	double GetItem(int row, int column);
-	double GetItem(int position[2]);
-	bool SetItem(int row, int column,double value);
-	bool SetItem(int position[2], double value);
-	int GetRowCount();
-	int GetColumnCount();
+	static Matrix Zeros(int row, int column);
+	static Matrix Unit(int sideCount);
+	int GetRowCount() const;
+	int GetColumnCount() const;
 	void RowMultiply(int row, double time);
 	void ColumnMultiply(int column, double time);
 	Matrix Inverse();
-	double CalcDeterminant();
-	int Rank();
-	void SetToZeroMatrix();
+	double Determinant();
+	int Rank() const;
 	void Transpose();
 	void SwapRows(int row1, int row2);
 	void SwapColumns(int column1, int column2);
 	void Reshape(int row, int column, double value = 0);
 	void Reshape(Matrix& m);
+	double* ToArray();
 	~Matrix();
-	Matrix operator*(double time);
+	void operator=(Matrix& m);
+	//可以确保行检查，不能保证列检查
+	double* operator[](int row);
 private:
 	double** r;
 	int rowCount, columnCount;
 };
-Matrix operator*(Matrix& ma, Matrix& mb);
+
+Matrix operator*(Matrix& a, Matrix& b);
+template<typename T>
+Matrix operator*(T a, Matrix b) {
+	assert(typeid(a) == typeid(int) || typeid(a) == typeid(float) || typeid(a) == typeid(double));
+	for (int i = 0; i < b.GetRowCount() * b.GetColumnCount(); i++)
+	{
+		b[i / b.GetRowCount()][i % b.GetColumnCount()] *= a;
+	}
+	return b;
+}
+template<typename T>
+Matrix operator*(Matrix a, T b) {
+	assert(typeid(b) == typeid(int) || typeid(b) == typeid(float) || typeid(b) == typeid(double));
+	for (int i = 0; i < a.GetRowCount() * a.GetColumnCount(); i++)
+	{
+		a[i / a.GetRowCount()][i % a.GetColumnCount()] *= b;
+	}
+	return a;
+}
 Matrix operator+(Matrix& ma, Matrix& mb);
 Matrix operator-(Matrix& ma, Matrix& mb);
 
