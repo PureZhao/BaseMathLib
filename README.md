@@ -5,8 +5,8 @@
 - Name change **Matrix::CalcDeterminant()** to **Matrix::Determinant()**
 - Delete functions **Matrix::GetItem()** and **Matrix::SetItem()**
 - Add overload funtion **Matrix::operator[]()** to replace functions **Matrix::GetItem()** and **Matrix::SetItem()**
-- Move inner-class function **Matrix::operator*()** to outer-class function **operator*()**
-- Add function **ToArray()**
+- Move inner-class function **Matrix::operator\*()** to outer-class function **operator\*()**
+- Add function **Matrix::ToArray()**
 - Add function **Matrix::operator=()**
 - Add static funtions **Matrix::Zeros()** and **Matrix::Unit()**
 
