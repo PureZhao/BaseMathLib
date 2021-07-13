@@ -14,7 +14,9 @@
 
 ### Bug Fixed
 
-- Fixed the function **Matrix::Determinant()** returns incorrect computing result
+- Fixed function **Matrix::Determinant()** returns incorrect computing result in two conditions
+   - when item will set to decimal in computing processing
+   - when the static row is not the first row
 
 -----------
 
