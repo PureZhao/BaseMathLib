@@ -22,70 +22,39 @@ Matrix::Matrix(Matrix& m) {
 	{
 		r[i] = new double[columnCount];
 	}
-	for (int i = 0; i < rowCount; i++)
+	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			r[i][j] = m.GetItem(i, j);
-		}
+		r[i / rowCount][i % columnCount] = m[i / rowCount][i % columnCount];
 	}
 }
 Matrix::Matrix(int row, int column) {
-	if (row < 0 || column < 0) { row = column = 1; }
+	assert(row > 0 && column > 0);
 	rowCount = row, columnCount = column;
 	r = new double*[rowCount];
 	for (int i = 0; i < rowCount; i++)
 	{
 		r[i] = new double[columnCount];
 	}
-	for (int i = 0; i < rowCount; i++)
+	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			r[i][j] = 0;
-		}
+		r[i / rowCount][i % columnCount] = 0;
 	}
 }
 Matrix::Matrix(int row, int column, double value) {
-	if (row < 0 || column < 0) { row = column = 1; }
+	assert(row > 0 && column > 0);
 	rowCount = row, columnCount = column;
 	r = new double*[rowCount];
 	for (int i = 0; i < rowCount; i++)
 	{
 		r[i] = new double[columnCount];
 	}
-	for (int i = 0; i < rowCount; i++)
+	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			r[i][j] =value;
-		}
+		r[i / rowCount][i % columnCount] = value;
 	}
 }
-double Matrix::GetItem(int row, int column) {
-	if (row >= rowCount || column >= columnCount) return -1;
-	if (row < 0 || column < 0) return -1;
-	return r[row][column];
-}
-double Matrix::GetItem(int position[2]) {
-	if (position[0] >= rowCount || position[1] >= columnCount) return -1;
-	if (position[0] < 0 || position[1] < 0) return -1;
-	return r[position[0]][position[1]];
-}
-bool Matrix::SetItem(int row, int column, double value) {
-	if (row >= rowCount || column >= columnCount) return false;
-	if (row < 0 || column < 0) return false;
-	r[row][column] = value;
-	return true;
-}
-bool Matrix::SetItem(int position[2], double value) {
-	if (position[0] >= rowCount || position[1] >= columnCount) return false;
-	if (position[0] < 0 || position[1] < 0) return false;
-	r[position[0]][position[1]] = value;
-	return true;
-}
-int Matrix::GetRowCount() { return rowCount; }
-int Matrix::GetColumnCount() { return columnCount; }
+int Matrix::GetRowCount() const { return rowCount; }
+int Matrix::GetColumnCount() const { return columnCount; }
 void Matrix::RowMultiply(int row, double time) {
 	if (row < 0 || row >= rowCount) return;
 	for (int i = 0; i < columnCount; i++)
@@ -100,75 +69,78 @@ void Matrix::ColumnMultiply(int column, double time) {
 		r[i][column] *= time;
 	}
 }
-double Matrix::CalcDeterminant() {
+double Matrix::Determinant() {
 	if (rowCount != columnCount) return -2147483648.0;
-	if (rowCount == 1) return GetItem(0, 0);
-	if (rowCount == 2) return GetItem(0, 0) * GetItem(1, 1) - GetItem(0, 1) * GetItem(1, 0);
+	if (rowCount == 1) return r[0][0];
+	if (rowCount == 2) return r[0][0] * r[1][1] - r[0][1] * r[1][0];
 	Matrix temp(rowCount,columnCount);
 	double res = 1.0;
-	for (int i = 0; i < rowCount; i++)
+	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			temp.SetItem(i, j, r[i][j]);
-		}
+		temp[i / rowCount][i%columnCount] = r[i / rowCount][i%columnCount];
 	}
 	while (true)
 	{
 		if (temp.GetRowCount() == 2) {
-			res *= (temp.GetItem(0, 0) * temp.GetItem(1, 1) - temp.GetItem(0, 1) * temp.GetItem(1, 0));
+			res *= (temp[0][0] * temp[1][1] - temp[0][1] * temp[1][0]);
 			break;
 		}
-		//ÕÒµ½µÚÒ»ÁÐµÚÒ»¸ö²»Îª0µÄÊý£¬Õâ¸öÊý²»±ä
+		//æ‰¾åˆ°ç¬¬ä¸€åˆ—ç¬¬ä¸€ä¸ªä¸ä¸º0çš„æ•°ï¼Œè¿™ä¸ªæ•°ä¸å˜
 		int row = 0;
-		while (row < temp.GetRowCount() && temp.GetItem(row, 0) == 0) row++;
+		while (row < temp.GetRowCount() && temp[row][0] == 0) row++;
 		if (row == temp.GetRowCount()) { res *= 0; break; }
-		//¼ÆËãµ½½á¹ûÖÐÈ¥
-		res *= temp.GetItem(row, 0);
+		//è®¡ç®—åˆ°ç»“æžœä¸­åŽ»
+		res *= temp[row][0];
 		res *= (row % 2 == 0 ? 1 : -1);
-		//°Ñ¸ÃÁÐ³ýÁËÑ¡ÖÐµÄÕâ¸öÊýÈ«²¿ÖÃ0
+		//æŠŠè¯¥åˆ—é™¤äº†é€‰ä¸­çš„è¿™ä¸ªæ•°å…¨éƒ¨ç½®0ï¼ŒåŒæ—¶å…¶ä»–åˆ—çš„æ•°ä¹Ÿè®¡ç®—æ”¹å˜,å¹¶å­˜ä¸ºæ–°çŸ©é˜µ
+		int a = temp.GetColumnCount() - 1;
+		double* arr = new double[a * a];
+		int ai = 0;
 		for (int i = 0; i < temp.GetRowCount(); i++)
 		{
-			if(i == row || temp.GetItem(i, 0) == 0) continue;
-			double coefficience = temp.GetItem(i, 0) / temp.GetItem(row, 0);
-			for (int j = 1; j < columnCount; j++)
+			if(i == row || temp[i][0] == 0) continue; //æ ‡è¯†è¡Œä¸å˜ï¼Œç¬¬ä¸€ä¸ªæ•°ä¹Ÿæ˜¯0ï¼Œä¸å˜
+			double coefficience = temp[i][0] / temp[row][0];
+			for (int j = 1; j < temp.GetColumnCount(); j++)
 			{
-				double val = temp.GetItem(i, j) - coefficience * temp.GetItem(row, j);
-				temp.SetItem(i, j, val);
+				temp[i][j] = temp[i][j] - coefficience * temp[row][j];
 			}
-			temp.SetItem(i, 0, 0);
+			temp[i][0] = 0;
 		}
-		Matrix p(temp.GetRowCount() - 1, temp.GetRowCount() - 1);
-		for (int i = 0; i < p.GetRowCount(); i++)
+		for (int i = 0; i < temp.GetRowCount(); i++)
 		{
-			for (int j = 0; j < p.GetColumnCount(); j++)
+			if (i == row) continue; //è·³è¿‡æ ‡è¯†è¡Œ
+			for (int j = 1; j < temp.GetColumnCount(); j++)
 			{
-				p.SetItem(i, j, temp.GetItem(i + 1, j + 1));
+				arr[ai++] = temp[i][j];
 			}
 		}
-		temp.Reshape(p);
-		
+		//ç”Ÿæˆæ–°çŸ©é˜µ
+		temp.Reshape(a, a);
+		for (int i = 0; i < a * a; i++)
+		{
+			temp[i / a][i % a] = arr[i];
+		}
+		delete[] arr;
 	}
+
 	return res;
 }
-int Matrix::Rank() {
+int Matrix::Rank() const {
 	if (rowCount == 1 || columnCount == 1) return 1;
 	Matrix temp(rowCount, columnCount);
-	for (int i = 0; i < rowCount; i++)
+	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			temp.SetItem(i, j, r[i][j]);
-		}
+		temp[i / rowCount][i % columnCount] = r[i / rowCount][i % columnCount];
 	}
 	int rank = 0;
 	while (true)
 	{
+		// æœ€åŽåªæœ‰ä¸€è¡Œäº†ï¼Œåˆ¤æ–­è¯¥è¡Œæ˜¯å¦å…¨0
 		if (temp.GetRowCount() == 1) {
 			bool isAllZero = true;
 			for (int i = 0; i < temp.GetColumnCount(); i++)
 			{
-				if (temp.GetItem(0, i) != 0) {
+				if (temp[0][i] != 0) {
 					isAllZero = false;
 					break;
 				}
@@ -176,11 +148,12 @@ int Matrix::Rank() {
 			rank += (isAllZero ? 0 : 1);
 			break;
 		}
+		//å¦‚æžœåªæœ‰ä¸€åˆ—äº†ï¼Œåˆ¤æ–­æ˜¯å¦å…¨0
 		if (temp.GetColumnCount() == 1) {
 			bool isAllZero = true;
 			for (int i = 0; i < temp.GetRowCount(); i++)
 			{
-				if (temp.GetItem(i, 0) != 0) {
+				if (temp[i][0] != 0) {
 					isAllZero = false;
 					break;
 				}
@@ -188,31 +161,30 @@ int Matrix::Rank() {
 			rank += (isAllZero ? 0 : 1);
 			break;
 		}
-		//ÕÒµ½µÚÒ»ÁÐµÚÒ»¸ö²»Îª0µÄÊý£¬Õâ¸öÊý²»±ä
+		//æ‰¾åˆ°ç¬¬ä¸€åˆ—ç¬¬ä¸€ä¸ªä¸ä¸º0çš„æ•°ï¼Œè¿™ä¸ªæ•°ä¸å˜
 		int row = 0;
-		while (row < temp.GetRowCount() && temp.GetItem(row, 0) == 0) row++;
-		//Èç¹ûÕâÒ»ÁÐÈ«Îª0,ÔòÖ»ÐèÒª¼ÆËãÊ£ÏÂµÄÁÐµÄÖÈ
+		while (row < temp.GetRowCount() && temp[row][0] == 0) row++;
+		//å¦‚æžœè¿™ä¸€åˆ—å…¨ä¸º0,åˆ™åªéœ€è¦è®¡ç®—å‰©ä¸‹çš„åˆ—çš„ç§©
 		if (row == temp.GetRowCount()) {
 			Matrix p(temp.GetRowCount(), temp.GetColumnCount() - 1);
 			for (int i = 0; i < p.GetRowCount(); i++)
 			{
 				for (int j = 0; j < p.GetColumnCount(); j++)
 				{
-					p.SetItem(i, j, temp.GetItem(i, j + 1));
+					p[i][j] = temp[i][j + 1];
 				}
 			}
 			temp.Reshape(p);
 			continue;
 		}
-		//½«ÆäËûÐÐµÄµÚÒ»¸öÊý±äÎª0
+		//å°†å…¶ä»–è¡Œçš„ç¬¬ä¸€ä¸ªæ•°å˜ä¸º0
 		for (int i = 0; i < temp.GetRowCount(); i++)
 		{
-			if (i == row || temp.GetItem(i, 0) == 0) continue;
-			double coefficience = temp.GetItem(i, 0) / temp.GetItem(row, 0);
+			if (i == row || temp[i][0] == 0) continue;
+			double coefficience = temp[i][0] / temp[row][0];
 			for (int j = 1; j < columnCount; j++)
 			{
-				double val = temp.GetItem(i, j) - coefficience * temp.GetItem(row, j);
-				temp.SetItem(i, j, val);
+				temp[i][j] = temp[i][j] - coefficience * temp[row][j];
 			}
 		}
 		Matrix p(temp.GetRowCount() - 1, temp.GetColumnCount() - 1);
@@ -222,7 +194,7 @@ int Matrix::Rank() {
 			if(i == row) continue;
 			for (int j = 1; j < temp.GetColumnCount(); j++)
 			{
-				p.SetItem(curRow, curColumn++, temp.GetItem(i, j));
+				p[curRow][curColumn++] = temp[i][j];
 			}
 			curRow++;
 			curColumn = 0;
@@ -234,7 +206,7 @@ int Matrix::Rank() {
 }
 Matrix Matrix::Inverse() {
 	if (rowCount != columnCount) return Matrix(1, 1, 0);
-	if(CalcDeterminant() == 0) return Matrix(1, 1, 0);
+	if(Determinant() == 0) return Matrix(1, 1, 0);
 	int n = rowCount;
 	Matrix partner(n, n);
 	for (int i = 0; i < n; i++)
@@ -249,24 +221,15 @@ Matrix Matrix::Inverse() {
 				for (int b = 0; b < n; b++)
 				{
 					if(b == j) continue;
-					p.SetItem(curRow, curColumn++, GetItem(a, b));
+					p[curRow][curColumn++] = r[a][b];
 				}
 				curRow++;
 				curColumn = 0;
 			}
-			partner.SetItem(j, i, p.CalcDeterminant() * ((i + j) % 2 == 0 ? 1 : -1));
+			partner[j][i] = p.Determinant() * ((i + j) % 2 == 0 ? 1 : -1);
 		}
 	}
-	return partner * (1.0 / CalcDeterminant());
-}
-void Matrix::SetToZeroMatrix() {
-	for (int i = 0; i < rowCount; i++)
-	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			r[i][j] = 0;
-		}
-	}
+	return partner * (1.0 / Determinant());
 }
 void Matrix::Transpose() {
 	double** p = new double*[columnCount];
@@ -317,12 +280,9 @@ void Matrix::Reshape(int row, int column, double value) {
 	{
 		p[i] = new double[column];
 	}
-	for (int i = 0; i < row; i++)
+	for (int i = 0; i < row * column; i++)
 	{
-		for (int j = 0; j < column; j++)
-		{
-			p[i][j] = value;
-		}
+		p[i / row][i%column] = value;
 	}
 	for (int i = 0; i < rowCount; i++)
 	{
@@ -346,14 +306,20 @@ void Matrix::Reshape(Matrix& m) {
 	{
 		r[i] = new double[columnCount];
 	}
-	for (int i = 0; i < rowCount; i++)
+	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			r[i][j] = m.GetItem(i, j);
-		}
+		r[i / rowCount][i % columnCount] = m[i / rowCount][i % columnCount];
 	}
 	
+}
+double* Matrix::ToArray()
+{
+	double* p = new double[rowCount*columnCount];
+	for (int i = 0; i < rowCount*columnCount; i++)
+	{
+		p[i] = r[i / rowCount][i%columnCount];
+	}
+	return p;
 }
 Matrix::~Matrix() {
 	for (int i = 0; i < rowCount; i++)
@@ -362,38 +328,66 @@ Matrix::~Matrix() {
 	}
 	delete[] r;
 }
-Matrix Matrix::operator*(double time) {
-	Matrix temp(rowCount, columnCount);
+void Matrix::operator=(Matrix& m)
+{
 	for (int i = 0; i < rowCount; i++)
 	{
-		for (int j = 0; j < columnCount; j++)
-		{
-			temp.SetItem(i, j, r[i][j] * time);
-		}
+		delete[] r[i];
 	}
-	return temp;
-}
-
-
-
-//Wild Function
-Matrix operator*(Matrix& ma, Matrix& mb) { 
-	if (ma.GetColumnCount() != mb.GetRowCount()) return Matrix(1, 1, 0);
-	Matrix res(ma.GetRowCount(), mb.GetColumnCount());
-	for (int i = 0; i < ma.GetRowCount(); i++)
+	delete[] r;
+	rowCount = m.GetRowCount();
+	columnCount = m.GetColumnCount();
+	r = new double*[rowCount];
+	for (int i = 0; i < rowCount; i++)
 	{
-		for (int j = 0; j < mb.GetColumnCount(); j++)
+		r[i] = new double[columnCount];
+	}
+	for (int i = 0; i < rowCount * columnCount; i++)
+	{
+		r[i/rowCount][i%columnCount] = m[i / rowCount][i%columnCount];
+	}
+
+}
+double* Matrix::operator[](int row) {
+	assert(row < rowCount);		//ä¸ºçœŸä¸æ‰§è¡Œ
+	return r[row];
+}
+//Static Member Function
+Matrix Matrix::Zeros(int row, int column) {
+	assert(row > 0 && column > 0);
+	return Matrix(row, column, 0);
+}
+Matrix Matrix::Unit(int sideCount)
+{
+	assert(sideCount > 0);
+	Matrix m(sideCount, sideCount);
+	for (int i = 0; i < sideCount; i++)
+	{
+		m[i][i] = 1;
+	}
+	return m;
+}
+//Wild Function
+Matrix operator*(Matrix& a, Matrix& b)
+{
+	assert(a.GetColumnCount() == b.GetRowCount());
+	Matrix res(a.GetRowCount(), b.GetColumnCount());
+	for (int i = 0; i < a.GetRowCount(); i++)
+	{
+		for (int j = 0; j < b.GetColumnCount(); j++)
 		{
-			double temp = 0;
-			for (int k = 0; k < ma.GetColumnCount(); k++)
+			double sum = 0;
+			for (int k = 0; k < a.GetColumnCount(); k++)
 			{
-				temp += (ma.GetItem(i, k)*mb.GetItem(k, j));
+				sum += (a[i][k] * b[k][j]);
 			}
-			res.SetItem(i, j, temp);
+			res[i][j] = sum;
 		}
 	}
-	return res; 
+	return res;
 }
+
+
 Matrix operator+(Matrix& ma, Matrix& mb){ 
 	if (ma.GetRowCount() != mb.GetRowCount()) return Matrix(1, 1, 0);
 	if (ma.GetColumnCount() != mb.GetColumnCount()) return Matrix(1, 1, 0);
@@ -402,7 +396,7 @@ Matrix operator+(Matrix& ma, Matrix& mb){
 	{
 		for (int j = 0; j < ma.GetColumnCount(); j++)
 		{
-			res.SetItem(i, j, ma.GetItem(i, j) + mb.GetItem(i, j));
+			res[i][j] = ma[i][j] + mb[i][j];
 		}
 	}
 	return res; 
@@ -415,7 +409,7 @@ Matrix operator-(Matrix& ma, Matrix& mb){
 	{
 		for (int j = 0; j < ma.GetColumnCount(); j++)
 		{
-			res.SetItem(i, j, ma.GetItem(i, j) - mb.GetItem(i, j));
+			res[i][j] = ma[i][j] - mb[i][j];
 		}
 	}
 	return res;
