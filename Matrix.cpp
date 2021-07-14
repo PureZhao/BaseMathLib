@@ -256,16 +256,6 @@ void Matrix::Transpose() {
 	columnCount = temp;
 }
 
-Matrix Matrix::Diagonal()
-{
-	Matrix res(rowCount, columnCount);
-	for (int i = 0; i < rowCount * columnCount; i++)
-	{
-		res[i / columnCount][i%columnCount] = r[i / columnCount][i%columnCount];
-	}
-	return res;
-}
-
 void Matrix::SwapRows(int row1, int row2) {
 	if (row1 < 0 || row2 < 0) return;
 	if (row2 >= rowCount || row1 >= rowCount) return;
