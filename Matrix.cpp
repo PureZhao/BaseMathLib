@@ -24,7 +24,7 @@ Matrix::Matrix(Matrix& m) {
 	}
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		r[i / rowCount][i % columnCount] = m[i / rowCount][i % columnCount];
+		r[i / columnCount][i % columnCount] = m[i / columnCount][i % columnCount];
 	}
 }
 Matrix::Matrix(int row, int column) {
@@ -37,7 +37,7 @@ Matrix::Matrix(int row, int column) {
 	}
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		r[i / rowCount][i % columnCount] = 0;
+		r[i / columnCount][i % columnCount] = 0;
 	}
 }
 Matrix::Matrix(int row, int column, double value) {
@@ -50,9 +50,10 @@ Matrix::Matrix(int row, int column, double value) {
 	}
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		r[i / rowCount][i % columnCount] = value;
+		r[i / columnCount][i % columnCount] = value;
 	}
 }
+
 int Matrix::GetRowCount() const { return rowCount; }
 int Matrix::GetColumnCount() const { return columnCount; }
 void Matrix::RowMultiply(int row, double time) {
@@ -77,7 +78,7 @@ double Matrix::Determinant() {
 	double res = 1.0;
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		temp[i / rowCount][i%columnCount] = r[i / rowCount][i%columnCount];
+		temp[i / columnCount][i%columnCount] = r[i / columnCount][i%columnCount];
 	}
 	while (true)
 	{
@@ -130,7 +131,7 @@ int Matrix::Rank() const {
 	Matrix temp(rowCount, columnCount);
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		temp[i / rowCount][i % columnCount] = r[i / rowCount][i % columnCount];
+		temp[i / columnCount][i % columnCount] = r[i / columnCount][i % columnCount];
 	}
 	int rank = 0;
 	while (true)
@@ -254,6 +255,17 @@ void Matrix::Transpose() {
 	rowCount = columnCount;
 	columnCount = temp;
 }
+
+Matrix Matrix::Diagonal()
+{
+	Matrix res(rowCount, columnCount);
+	for (int i = 0; i < rowCount * columnCount; i++)
+	{
+		res[i / columnCount][i%columnCount] = r[i / columnCount][i%columnCount];
+	}
+	return res;
+}
+
 void Matrix::SwapRows(int row1, int row2) {
 	if (row1 < 0 || row2 < 0) return;
 	if (row2 >= rowCount || row1 >= rowCount) return;
@@ -282,7 +294,7 @@ void Matrix::Reshape(int row, int column, double value) {
 	}
 	for (int i = 0; i < row * column; i++)
 	{
-		p[i / row][i%column] = value;
+		p[i / column][i%column] = value;
 	}
 	for (int i = 0; i < rowCount; i++)
 	{
@@ -308,7 +320,7 @@ void Matrix::Reshape(Matrix& m) {
 	}
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		r[i / rowCount][i % columnCount] = m[i / rowCount][i % columnCount];
+		r[i / columnCount][i % columnCount] = m[i / columnCount][i % columnCount];
 	}
 	
 }
@@ -317,7 +329,7 @@ double* Matrix::ToArray()
 	double* p = new double[rowCount*columnCount];
 	for (int i = 0; i < rowCount*columnCount; i++)
 	{
-		p[i] = r[i / rowCount][i%columnCount];
+		p[i] = r[i / columnCount][i%columnCount];
 	}
 	return p;
 }
@@ -344,7 +356,7 @@ void Matrix::operator=(Matrix& m)
 	}
 	for (int i = 0; i < rowCount * columnCount; i++)
 	{
-		r[i/rowCount][i%columnCount] = m[i / rowCount][i%columnCount];
+		r[i/ columnCount][i%columnCount] = m[i / columnCount][i%columnCount];
 	}
 
 }
@@ -386,8 +398,6 @@ Matrix operator*(Matrix& a, Matrix& b)
 	}
 	return res;
 }
-
-
 Matrix operator+(Matrix& ma, Matrix& mb){ 
 	if (ma.GetRowCount() != mb.GetRowCount()) return Matrix(1, 1, 0);
 	if (ma.GetColumnCount() != mb.GetColumnCount()) return Matrix(1, 1, 0);
@@ -413,4 +423,15 @@ Matrix operator-(Matrix& ma, Matrix& mb){
 		}
 	}
 	return res;
+}
+void PrintMatrix(Matrix& m) {
+	for (int i = 0; i < m.GetRowCount(); i++)
+	{
+		for (int j = 0; j < m.GetColumnCount(); j++)
+		{
+			cout << m[i][j] << " ";
+		}
+		cout << endl;
+	}
+	cout << endl;
 }
