@@ -20,3 +20,11 @@
 
 -----------
 
+## 2021.7.14 Update
+
+### Bug Fixed
+
+- Fixed bug when matrix's **row != column** , it will assign matrix item value to the memories out of bound 
+
+-----------
+
